@@ -9,7 +9,7 @@ const config = {
   storageBucket: "crwn-db-deba6.appspot.com",
   messagingSenderId: "313144925409",
   appId: "1:313144925409:web:edbd5c8a9e4c024dabeba0",
-  measurementId: "G-KQ5XE7SH70"
+  measurementId: "G-KQ5XE7SH70",
 };
 
 export const createUserProfileDocument = async (userAuth, additionalData) => {
@@ -36,6 +36,40 @@ export const createUserProfileDocument = async (userAuth, additionalData) => {
   }
 
   return userRef;
+};
+
+export const addCollectionAndDocuments = async (
+  collectionKey,
+  objectsToAdd
+) => {
+  const collectionRef = firestore.collection(collectionKey);
+  console.log(collectionRef);
+
+  const batch = firestore.batch();
+  objectsToAdd.forEach((obj) => {
+    const newDocRef = collectionRef.doc();
+    batch.set(newDocRef, obj);
+  });
+
+  return await batch.commit();
+};
+
+export const convertCollectionsSnapshotToMap = (collections) => {
+  const transformedCollection = collections.docs.map((doc) => {
+    const { title, items } = doc.data();
+
+    return {
+      routeName: encodeURI(title.toLowerCase()),
+      id: doc.id,
+      title,
+      items,
+    };
+  });
+
+  return transformedCollection.reduce((accumulator, collection) => {
+    accumulator[collection.title.toLowerCase()] = collection;
+    return accumulator;
+  }, {});
 };
 
 firebase.initializeApp(config);
